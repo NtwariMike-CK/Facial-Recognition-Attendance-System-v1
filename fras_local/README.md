@@ -42,7 +42,7 @@ pip install -r requirements.txt
 Download the face landmarks model file:
 - Go to: http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 - Download and extract the file
-- Place `shape_predictor_68_face_landmarks.dat` in the `local_recognition` folder
+- Place `shape_predictor_68_face_landmarks.dat` in the root folder
 
 ### 5. Configure API URL
 
