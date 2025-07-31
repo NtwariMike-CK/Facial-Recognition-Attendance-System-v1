@@ -11,10 +11,15 @@ This local recognition system connects to your deployed FRAS backend to perform 
 
 ## Installation Steps
 
-### 1. Create Project Directory
+### 1. Clone the Repository
+```
+https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1.git
+Facial-Recognition-Attendance-System-v1
+```
+
+### 2. Navigate to root Directory
 ```bash
-mkdir fras_local_recognition
-cd fras_local_recognition
+cd fras_local
 ```
 
 ### 2. Create Virtual Environment
@@ -40,23 +45,16 @@ Download the face landmarks model file:
 - Place `shape_predictor_68_face_landmarks.dat` in the `local_recognition` folder
 
 ### 5. Configure API URL
-Edit the `config.py` file and update the API URL:
-```python
-# In config.py, update this line with your deployed backend URL:
-self.API_BASE_URL = "https://your-deployed-backend.com/api"
-```
 
 ## File Structure
 ```
-fras_local_recognition/
-├── local_recognition/
-│   ├── main.py                               # Main application
-│   ├── config.py                            # Configuration settings
-│   ├── database_client.py                   # API client for backend
-│   ├── recognition_engine.py                # Face recognition logic
-│   ├── requirements.txt                     # Python dependencies
-│   └── shape_predictor_68_face_landmarks.dat # Face landmarks model (download)
-|   └── run.sh                               # script to start our app
+fras_local/
+├── main.py                               # Main application
+├── config.py                            # Configuration settings
+├── database_client.py                   # API client for backend
+├── recognition_service.py                # Face recognition logic
+├── requirements.txt                     # Python dependencies
+└── shape_predictor_68_face_landmarks.dat # Face landmarks model (download)
 └── venv/                                    # Virtual environment
 ```
 
@@ -72,7 +70,6 @@ source venv/bin/activate
 
 ### 2. Start the Application
 ```bash
-cd local_recognition
 python main.py
 ```
 
