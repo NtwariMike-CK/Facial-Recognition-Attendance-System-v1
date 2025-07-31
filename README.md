@@ -1,7 +1,5 @@
 # Facial-Recognition-Attendance-System-v1
 
-# FRAS - Facial Recognition Attendance System
-
 A comprehensive attendance tracking system that uses facial recognition technology to monitor employee attendance. Companies can efficiently manage employee attendance through automated facial recognition with liveness detection.
 
 ## Features
