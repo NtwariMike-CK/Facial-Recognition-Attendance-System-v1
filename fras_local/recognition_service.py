@@ -1,4 +1,4 @@
-# app/services/recognition_service.py
+# app/services/recognition_service1.py
 import threading
 import time
 import os
@@ -61,13 +61,14 @@ class RecognitionService:
         self.person_blink_count = {}
         self.eye_closed_frames = {}
         self.last_detection_time = {}
+        self.last_processing_time = {}  # Add throttling for processing
         # Store employee IDs instead of database objects
         self.attendance_employee_ids = {}
         
         # Configuration
         self.BLINK_THRESHOLD = 5
         self.BLINK_DURATION_THRESHOLD = 3
-        self.CHECKOUT_DELAY_MINUTES = 2
+        self.CHECKOUT_DELAY_MINUTES = 0.3
         self.face_tolerance = 0.6
         
         # Camera
@@ -361,7 +362,7 @@ class RecognitionService:
         return self.person_blink_count.get(name, 0) >= self.BLINK_THRESHOLD
     
     def update_attendance_record(self, employee_name: str, action: str) -> bool:
-        """Update attendance record via API"""
+        """Update attendance record via API - Updated logic for automatic check-in/check-out"""
         try:
             logger.info(f"Attempting to update attendance: {employee_name} - {action}")
             
@@ -370,27 +371,30 @@ class RecognitionService:
                 logger.error(f"No employee ID found for {employee_name}")
                 return False
             
-            # Get fresh record from API
+            # Use timezone-aware current time
+            current_time = self.get_current_time()
+            logger.info(f"Current time: {current_time}")
+            
+            # Get fresh record from API - force refresh
             today_data = self.db_client.get_today_attendance()
             record = None
             
             if today_data and "records" in today_data:
-                for r in today_data["records"]:
-                    if r.get("name") == employee_name:
-                        record = r
-                        break
+                # Sort records by ID to get the most recent one for this employee
+                employee_records = [r for r in today_data["records"] if r.get("name") == employee_name]
+                if employee_records:
+                    # Get the most recent record (highest ID)
+                    record = max(employee_records, key=lambda x: x.get('id', 0))
             
             if not record:
                 logger.error(f"No attendance record found for {employee_name}")
                 return False
             
-            # Use timezone-aware current time
-            current_time = self.get_current_time()
-            logger.info(f"Current time: {current_time}")
-            logger.info(f"Record current state - Arrival: {record.get('arrival_time')}, Departure: {record.get('departure_time')}, Status: {record.get('status')}")
+            logger.info(f"Record current state - ID: {record.get('id')}, Arrival: {record.get('arrival_time')}, Departure: {record.get('departure_time')}, Status: {record.get('status')}")
             
-            if action == "checkin" and not record.get("arrival_time"):
-                # Update check-in time and status
+            # Check if employee is not checked in yet (no arrival time or status is absent)
+            if not record.get("arrival_time") or record.get("status") == "absent":
+                # First detection - Check in
                 attendance_data = {
                     "employee_id": employee_id,
                     "arrival_time": current_time.isoformat(),
@@ -401,58 +405,106 @@ class RecognitionService:
                 if self.db_client.create_attendance_record(attendance_data):
                     self.last_detection_time[employee_name] = current_time
                     logger.info(f"✓ {employee_name} checked in at {current_time.strftime('%H:%M:%S')}")
+                    
+                    # Add a small delay to allow database to update
+                    time.sleep(0.5)
                     return True
                 else:
                     logger.error(f"Failed to create check-in record for {employee_name}")
                     return False
                     
-            elif action == "checkout" and record.get("arrival_time") and not record.get("departure_time"):
-                # Check if enough time has passed since last detection
+            elif record.get("arrival_time") and not record.get("departure_time") and record.get("status") == "present":
+                # Employee is checked in but not checked out yet
+                # Check if 2 minutes have passed since last detection OR since arrival
                 last_time = self.last_detection_time.get(employee_name)
-                logger.info(f"Last detection time for {employee_name}: {last_time}")
+                
+                # If no last detection time, use arrival time
+                if not last_time:
+                    arrival_time_str = record.get("arrival_time")
+                    if arrival_time_str:
+                        try:
+                            # Parse arrival time - handle both ISO format with and without timezone
+                            if arrival_time_str.endswith('Z'):
+                                arrival_time = datetime.fromisoformat(arrival_time_str.replace('Z', '+00:00'))
+                            elif '+' in arrival_time_str[-6:] or arrival_time_str.endswith('+00:00'):
+                                arrival_time = datetime.fromisoformat(arrival_time_str)
+                            else:
+                                # Assume it's in Kigali timezone if no timezone info
+                                arrival_time = datetime.fromisoformat(arrival_time_str)
+                                arrival_time = self.make_timezone_aware(arrival_time)
+                            
+                            last_time = arrival_time
+                        except Exception as e:
+                            logger.error(f"Error parsing arrival time {arrival_time_str}: {e}")
+                            last_time = current_time - timedelta(minutes=3)  # Force checkout
+                
+                logger.info(f"Last detection/arrival time for {employee_name}: {last_time}")
                 
                 if last_time:
                     # Ensure both times are timezone-aware for comparison
                     last_time_aware = self.make_timezone_aware(last_time)
                     time_diff = (current_time - last_time_aware).total_seconds()
                     
-                    if time_diff < self.CHECKOUT_DELAY_MINUTES * 60:
-                        logger.info(f"Too soon for checkout. Only {int(time_diff)} seconds passed")
-                        return False
-                
-                # Calculate hours worked with timezone-aware times
-                arrival_time_str = record.get("arrival_time")
-                if arrival_time_str:
-                    # Parse the arrival time from ISO format
-                    arrival_time = datetime.fromisoformat(arrival_time_str.replace('Z', '+00:00'))
-                    arrival_time_aware = self.make_timezone_aware(arrival_time)
-                    hours_worked = (current_time - arrival_time_aware).total_seconds() / 3600
+                    logger.info(f"Time difference: {int(time_diff)} seconds ({time_diff/60:.1f} minutes)")
                     
-                    # Create checkout record
-                    attendance_data = {
-                        "employee_id": employee_id,
-                        "arrival_time": arrival_time_str,
-                        "departure_time": current_time.isoformat(),
-                        "hours_worked": round(hours_worked, 2),
-                        "status": "present",
-                        "camera_used": self.camera_type
-                    }
-                    
-                    if self.db_client.create_attendance_record(attendance_data):
-                        logger.info(f"✓ {employee_name} checked out at {current_time.strftime('%H:%M:%S')} - Hours: {round(hours_worked, 2)}")
-                        return True
+                    if time_diff >= self.CHECKOUT_DELAY_MINUTES * 60:
+                        # Enough time has passed, proceed with checkout
+                        
+                        # Calculate hours worked with timezone-aware times
+                        arrival_time_str = record.get("arrival_time")
+                        if arrival_time_str:
+                            try:
+                                # Parse the arrival time from ISO format
+                                if arrival_time_str.endswith('Z'):
+                                    arrival_time = datetime.fromisoformat(arrival_time_str.replace('Z', '+00:00'))
+                                elif '+' in arrival_time_str[-6:] or arrival_time_str.endswith('+00:00'):
+                                    arrival_time = datetime.fromisoformat(arrival_time_str)
+                                else:
+                                    arrival_time = datetime.fromisoformat(arrival_time_str)
+                                    arrival_time = self.make_timezone_aware(arrival_time)
+                                
+                                arrival_time_aware = self.make_timezone_aware(arrival_time)
+                                hours_worked = (current_time - arrival_time_aware).total_seconds() / 3600
+                                
+                                # Create checkout record
+                                attendance_data = {
+                                    "employee_id": employee_id,
+                                    "arrival_time": arrival_time_str,
+                                    "departure_time": current_time.isoformat(),
+                                    "hours_worked": round(hours_worked, 2),
+                                    "status": "present",
+                                    "camera_used": self.camera_type
+                                }
+                                
+                                if self.db_client.create_attendance_record(attendance_data):
+                                    logger.info(f"✓ {employee_name} checked out at {current_time.strftime('%H:%M:%S')} - Hours: {round(hours_worked, 2)}")
+                                    # Reset blink count after successful checkout
+                                    self.person_blink_count[employee_name] = 0
+                                    
+                                    # Add a small delay to allow database to update
+                                    time.sleep(0.5)
+                                    return True
+                                else:
+                                    logger.error(f"Failed to create check-out record for {employee_name}")
+                                    return False
+                                    
+                            except Exception as e:
+                                logger.error(f"Error processing checkout for {employee_name}: {e}")
+                                return False
                     else:
-                        logger.error(f"Failed to create check-out record for {employee_name}")
+                        logger.info(f"Not enough time passed for checkout. Need {self.CHECKOUT_DELAY_MINUTES} minutes, only {int(time_diff)} seconds passed")
+                        # Update last detection time for next check
+                        self.last_detection_time[employee_name] = current_time
                         return False
+                else:
+                    logger.error(f"No reference time found for {employee_name}")
+                    return False
             
             else:
-                if action == "checkin":
-                    logger.info(f"Check-in ignored - {employee_name} already has arrival time: {record.get('arrival_time')}")
-                elif action == "checkout":
-                    if not record.get("arrival_time"):
-                        logger.info(f"Check-out ignored - {employee_name} hasn't checked in yet")
-                    elif record.get("departure_time"):
-                        logger.info(f"Check-out ignored - {employee_name} already checked out at: {record.get('departure_time')}")
+                if record.get("departure_time"):
+                    logger.info(f"Employee {employee_name} already checked out at: {record.get('departure_time')}")
+                else:
+                    logger.info(f"Unexpected state for {employee_name} - Status: {record.get('status')}")
                 
                 return False
                     
@@ -572,9 +624,9 @@ class RecognitionService:
         return frame
     
     def recognition_loop(self):
-        """Main recognition loop with camera preview"""
+        """Main recognition loop with automatic attendance detection"""
         try:
-            logger.info("Starting recognition loop with camera preview...")
+            logger.info("Starting recognition loop with automatic attendance detection...")
             frame_count = 0
             
             while not self.stop_event.is_set():
@@ -636,35 +688,55 @@ class RecognitionService:
                                             shape = self.predictor(gray, rect)
                                             shape = np.array([[p.x, p.y] for p in shape.parts()])
                                             
-                                            # Check if person has blinked enough
+                                            # Check if person has blinked enough for liveness verification
                                             if self.detect_blink(shape, name):
-                                                # Use thread-safe database access
-                                                employee_id = self.attendance_employee_ids.get(name)
-                                                if employee_id:
-                                                    # Check current status to decide action
-                                                    try:
-                                                        today_data = self.db_client.get_today_attendance()
-                                                        record = None
-                                                        
-                                                        if today_data and "records" in today_data:
-                                                            for r in today_data["records"]:
-                                                                if r.get("name") == name:
-                                                                    record = r
-                                                                    break
-                                                        
-                                                        if record:
-                                                            if not record.get("arrival_time"):
-                                                                if self.update_attendance_record(name, "checkin"):
-                                                                    logger.info(f"✓ {name} checked in successfully")
-                                                                    # Reset blink count after successful check-in
-                                                                    self.person_blink_count[name] = 0
-                                                            elif not record.get("departure_time"):
-                                                                if self.update_attendance_record(name, "checkout"):
-                                                                    logger.info(f"✓ {name} checked out successfully")
-                                                                    # Reset blink count after successful check-out
-                                                                    self.person_blink_count[name] = 0
-                                                    except Exception as e:
-                                                        logger.error(f"Error accessing attendance data for {name}: {e}")
+                                                # Add throttling to prevent too frequent processing
+                                                current_time = self.get_current_time()
+                                                last_processed = self.last_processing_time.get(name)
+                                                
+                                                # Only process if at least 10 seconds have passed since last processing
+                                                if not last_processed or (current_time - last_processed).total_seconds() >= 10:
+                                                    # Automatic attendance processing
+                                                    employee_id = self.attendance_employee_ids.get(name)
+                                                    if employee_id:
+                                                        # Process attendance automatically based on current status
+                                                        try:
+                                                            today_data = self.db_client.get_today_attendance()
+                                                            
+                                                            # Find the most recent record for this employee
+                                                            employee_records = []
+                                                            if today_data and "records" in today_data:
+                                                                employee_records = [r for r in today_data["records"] if r.get("name") == name]
+                                                            
+                                                            if employee_records:
+                                                                # Get the most recent record (highest ID)
+                                                                record = max(employee_records, key=lambda x: x.get('id', 0))
+                                                                
+                                                                if not record.get("arrival_time") or record.get("status") == "absent":
+                                                                    # Employee not checked in yet - check in
+                                                                    if self.update_attendance_record(name, "checkin"):
+                                                                        logger.info(f"✓ {name} automatically checked in")
+                                                                        # Reset blink count after successful check-in
+                                                                        self.person_blink_count[name] = 0
+                                                                        self.last_processing_time[name] = current_time
+                                                                elif record.get("arrival_time") and not record.get("departure_time") and record.get("status") == "present":
+                                                                    # Employee is checked in - try to check out (will check 2-minute rule)
+                                                                    if self.update_attendance_record(name, "checkout"):
+                                                                        logger.info(f"✓ {name} automatically checked out")
+                                                                        # Reset blink count after successful check-out
+                                                                        self.person_blink_count[name] = 0
+                                                                        self.last_processing_time[name] = current_time
+                                                                else:
+                                                                    # Employee already completed for the day
+                                                                    logger.info(f"{name} already has complete attendance record for today")
+                                                            else:
+                                                                logger.warning(f"No attendance records found for {name}")
+                                                                
+                                                        except Exception as e:
+                                                            logger.error(f"Error processing attendance for {name}: {e}")
+                                                else:
+                                                    time_since_last = (current_time - last_processed).total_seconds()
+                                                    logger.debug(f"Throttling processing for {name} - only {int(time_since_last)} seconds since last processing")
                             
                             face_names.append(name)
                             confidences.append(confidence)
@@ -697,7 +769,7 @@ class RecognitionService:
                 # Show camera preview locally
                 if self.show_preview:
                     try:
-                        cv2.imshow('Face Recognition - Local Preview', display_frame)
+                        cv2.imshow('Face Recognition - Automatic Attendance', display_frame)
                         
                         # Check for 'q' key press to stop
                         key = cv2.waitKey(1) & 0xFF
@@ -782,7 +854,7 @@ class RecognitionService:
                                 
                                 # Check if person has blinked enough
                                 if self.detect_blink(shape, name):
-                                    # Check current status to decide action
+                                    # Automatic attendance processing
                                     employee_id = self.attendance_employee_ids.get(name)
                                     if employee_id:
                                         # Get current attendance status
@@ -798,12 +870,12 @@ class RecognitionService:
                                         if record:
                                             if not record.get("arrival_time"):
                                                 if self.update_attendance_record(name, "checkin"):
-                                                    detections.append(f"✓ {name} checked in successfully")
+                                                    detections.append(f"✓ {name} automatically checked in")
                                                     # Reset blink count after successful check-in
                                                     self.person_blink_count[name] = 0
-                                            elif not record.get("departure_time"):
+                                            elif record.get("arrival_time") and not record.get("departure_time"):
                                                 if self.update_attendance_record(name, "checkout"):
-                                                    detections.append(f"✓ {name} checked out successfully")
+                                                    detections.append(f"✓ {name} automatically checked out")
                                                     # Reset blink count after successful check-out
                                                     self.person_blink_count[name] = 0
                 
@@ -834,13 +906,13 @@ class RecognitionService:
         return None
     
     def start_recognition(self, show_preview: bool = True):
-        """Start the recognition system with camera preview"""
+        """Start the recognition system with automatic attendance detection"""
         if self.is_running:
             logger.warning("Recognition system is already running")
             return {"error": "Recognition system is already running"}
         
         try:
-            logger.info("Starting recognition system...")
+            logger.info("Starting automatic attendance recognition system...")
             self.show_preview = show_preview
             
             # Check if authenticated
@@ -864,7 +936,7 @@ class RecognitionService:
             # Verify we have employees loaded
             if len(self.known_face_names) == 0:
                 return {"error": "No employee face encodings loaded"}
-            logger.info(f"Ready to recognize {len(self.known_face_names)} employees")
+            logger.info(f"Ready to automatically detect attendance for {len(self.known_face_names)} employees")
             
             # Reset stop event
             self.stop_event.clear()
@@ -874,12 +946,16 @@ class RecognitionService:
             self.recognition_thread.start()
             
             self.is_running = True
-            logger.info("Recognition system started successfully")
+            logger.info("Automatic attendance recognition system started successfully")
             
             if show_preview:
                 logger.info("Camera preview will be shown - Press 'q' in the camera window to stop")
             
-            return {"message": "Recognition system started successfully", "status": "active"}
+            return {
+                "message": "Automatic attendance recognition system started successfully", 
+                "status": "active",
+                "info": f"Monitoring {len(self.known_face_names)} employees with 2-minute checkout delay"
+            }
             
         except Exception as e:
             logger.error(f"Failed to start recognition: {e}")
@@ -931,6 +1007,7 @@ class RecognitionService:
             "camera_type": self.camera_type,
             "blink_threshold": self.BLINK_THRESHOLD,
             "face_tolerance": self.face_tolerance,
+            "checkout_delay_minutes": self.CHECKOUT_DELAY_MINUTES,
             "authenticated": bool(self.token and self.company)
         }
 
