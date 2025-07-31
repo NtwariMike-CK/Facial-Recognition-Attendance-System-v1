@@ -106,55 +106,55 @@ The platform consists of two main components:
 ```
 
 ## 3. Employee Management
-. Add employees manually
-. Upload front-facing passport-style images
-. Export data as CSV
-. Edit or delete employee records
+- Add employees manually
+- Upload front-facing passport-style images
+- Export data as CSV
+- Edit or delete employee records
 Note: Clear facial images are essential for reliable recognition.
 
 --- 
 
 ## 4. Configure Camera Settings
-Camera Type: webcam or ip
-Camera Source: 0 for default webcam or IP address
-Blinking Threshold: Suggest 3
-Arrival/Departure Time: e.g., 08:00, 17:00
-Click "Save Settings" when done.
+- Camera Type: webcam or ip
+- Camera Source: 0 for default webcam or IP address
+- Blinking Threshold: Suggest 3
+- Arrival/Departure Time: e.g., 08:00, 17:00
+- Click "Save Settings" when done.
 
 ---
 
 ## 5. Run Local Recognition App
-Facial recognition does not run on Vercel/Render.
-Use the local app for live recognition.
-Check how to use it below
+- Facial recognition does not run on Vercel/Render.
+- Use the local app for live recognition.
+- Check how to use it below
 
 ---
 
 ## 6. View Attendance
-Filter by date, status, or employee
-Track absentees or best performers
-Export attendance summaries
+- Filter by date, status, or employee
+- Track absentees or best performers
+- Export attendance summaries
 
 ---
 
 ## 7. Ticket Management
-View tickets submitted by employees
-Filter: pending, in progress, solved
-Update ticket status and respond as needed
+- View tickets submitted by employees
+- Filter: pending, in progress, solved
+- Update ticket status and respond as needed
 
 ---
 
 ## 8. Admin Settings
-Update name, email, or password
-Toggle between dark/light themes
-Manage general preferences
+- Update name, email, or password
+- Toggle between dark/light themes
+- Manage general preferences
 
 ---
 
 # Employee Usage
 ## Login
-Endpoint Frontend_URL/auth/employee/login
-Note: Employees are registered by the admin and cannot self-register.
+- Endpoint Frontend_URL/auth/employee/login
+- Note: Employees are registered by the admin and cannot self-register.
 ```
 {
   "id": 1,
@@ -181,7 +181,7 @@ Note: Employees are registered by the admin and cannot self-register.
 # Local Facial Recognition Setup
 
 ## Detailed guide:
-GitHub – fras_local README
+- GitHub – fras_local README
 ```
 https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1/blob/main/fras_local/README.md 
 ```
@@ -266,11 +266,11 @@ fras_local/
 3. Let the app run for at least 4 minutes to test full cycle
 
 📝 Notes
-Do not interrupt recognition while running.
-Data is securely transmitted to the backend.
-Chrome or Edge are recommended browsers.
-Liveness detection relies on blinking — avoid static photos.
+- Do not interrupt recognition while running.
+- Data is securely transmitted to the backend.
+- Chrome or Edge are recommended browsers.
+- Liveness detection relies on blinking — avoid static photos.
 
 
 ## License
-  . MIT License – Open for use, contribution, and extension.
+  - MIT License – Open for use, contribution, and extension.
