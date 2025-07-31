@@ -17,7 +17,7 @@ A comprehensive attendance tracking system that uses facial recognition technolo
 ## Project Structure
 
 ```
-fras/
+Facial-Recognition-Attendance-System-v1/
 ├── backend/                           # FastAPI backend
 │   ├── app/                          # Main application package
 │   │   ├── __pycache__/
@@ -76,7 +76,9 @@ Before setting up FRAS, ensure you have the following installed:
 - **Git**
 - **Webcam or IP Camera**
 
-**Note**: You'll be setting up a local PostgreSQL database for development. Do not use any production or deployed database for local development.
+**Note**: 
+1. You'll be setting up a local PostgreSQL database for development. Do not use any production or deployed database for local development.
+2. Make sure shape_predictor_68_face_landmarks.dat is at the root (backend/.), and place dlib_face_recognition_resnet_model_v1.dat in backend/app/services
 
 ## Installation & Setup
 
@@ -416,6 +418,7 @@ The system automatically:
 ## Production Deployment
 
 ### Backend Deployment
+**Note**: Facial recognition modules like dlib, facial recognition are big and require paid versions for hosting on sites like render etc.
 1. Set `DEBUG=False` in environment variables
 2. Use production WSGI server (e.g., Gunicorn)
 3. Configure reverse proxy (Nginx)
