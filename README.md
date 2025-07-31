@@ -63,6 +63,18 @@ Facial-Recognition-Attendance-System-v1/
 │   ├── .env.local                   # Local environment variables (create this)
 │   ├── .env.example                 # Example environment file
 │   └── .gitignore
+|   |
+├── fras_local/                        # Next.js frontend
+│   ├── local_recognition/
+│   │   │   ├── config.py
+│   │   │   ├── .env
+│   │   │   ├── database_client.py
+│   │   │   ├── main.py
+│   │   │   ├── recognition_service.py
+│   │   │   ├── requirements.txt
+|   |   |   ├── shape_predictor_68_face_landmarks.dat
+│   │   │   ├── README.md
+|   |
 └── README.md
 ```
 
@@ -80,13 +92,19 @@ Before setting up FRAS, ensure you have the following installed:
 1. You'll be setting up a local PostgreSQL database for development. Do not use any production or deployed database for local development.
 2. Make sure shape_predictor_68_face_landmarks.dat is at the root (backend/.), and place dlib_face_recognition_resnet_model_v1.dat in backend/app/services
 
+## fras_local
+
+fras_local is the facial recognition engine which is meant to run locally because free hosting plan on render, railway or others do not support heavy packages
+like facial recognition and dlib. So it is an extension for the deployed FRAS `https://fras-git-main-ntwari-mike-chris-kevins-projects.vercel.app/`.
+But if running FRAS locally, you do not need it as frontend and backend do everything when setup locally. Check below how to use the Hosted FRAS and fras_local together
+
 ## Installation & Setup
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/fras.git
-cd fras
+https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1.git
+Facial-Recognition-Attendance-System-v1
 ```
 
 ### 2. Local Database Setup
@@ -246,7 +264,8 @@ npm run dev
 yarn dev
 ```
 
-The frontend application will be available at `http://localhost:3000`
+The frontend application will be available at `https://fras-git-main-ntwari-mike-chris-kevins-projects.vercel.app/`
+
 
 ## Usage Guide
 
@@ -456,7 +475,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support and questions:
 - Create an issue on GitHub
-- Email: support@fras-system.com
+- Email: ntwarikevin95@gmail.com
 - Documentation: [Project Wiki](https://github.com/yourusername/fras/wiki)
 
 ## Changelog
