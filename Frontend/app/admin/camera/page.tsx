@@ -99,28 +99,28 @@ export default function CameraSettings() {
     }
   }
 
-  // const fetchCameraStatus = async () => {
-  //   try {
-  //     const response = await fetch(`${API_URL}/admin/camera-settings/status`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`
-  //       }
-  //     })
+  const fetchCameraStatus = async () => {
+    try {
+      const response = await fetch(`${API_URL}/admin/camera-settings/status`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       
-  //     if (response.ok) {
-  //       const status = await response.json()
-  //       setCameraStatus(status)
+      if (response.ok) {
+        const status = await response.json()
+        setCameraStatus(status)
         
-  //       // Update recognition active state based on actual service status
-  //       const actuallyRunning = status.service_running && status.frame_ready
-  //       if (isRecognitionActive !== actuallyRunning) {
-  //         setIsRecognitionActive(actuallyRunning)
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching camera status:', error)
-  //   }
-  // }
+        // Update recognition active state based on actual service status
+        const actuallyRunning = status.service_running && status.frame_ready
+        if (isRecognitionActive !== actuallyRunning) {
+          setIsRecognitionActive(actuallyRunning)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching camera status:', error)
+    }
+  }
 
   const updateCameraSettings = async () => {
     try {
@@ -161,221 +161,221 @@ export default function CameraSettings() {
     }
   }
 
-  // const startRecognition = async () => {
-  //   setIsStarting(true)
-  //   try {
-  //     const response = await fetch(`${API_URL}/admin/camera-settings/start-recognition?show_preview=${showPreview}`, {
-  //       method: "POST",
-  //       headers: { Authorization: `Bearer ${token}` }
-  //     })
+  const startRecognition = async () => {
+    setIsStarting(true)
+    try {
+      const response = await fetch(`${API_URL}/admin/camera-settings/start-recognition?show_preview=${showPreview}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      })
 
-  //     if (!response.ok) {
-  //       const errorData = await response.json().catch(() => ({}))
-  //       throw new Error(errorData.detail || "Failed to start recognition")
-  //     }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || "Failed to start recognition")
+      }
 
-  //     const result = await response.json()
-  //     setIsRecognitionActive(true)
+      const result = await response.json()
+      setIsRecognitionActive(true)
       
-  //     // Start status monitoring
-  //     startStatusMonitoring()
+      // Start status monitoring
+      startStatusMonitoring()
 
-  //     // Start preview if enabled and recognition started successfully
-  //     if (showPreview) {
-  //       // Wait a moment for camera to initialize
-  //       setTimeout(() => {
-  //         startVideoPreview()
-  //       }, 2000)
-  //     }
+      // Start preview if enabled and recognition started successfully
+      if (showPreview) {
+        // Wait a moment for camera to initialize
+        setTimeout(() => {
+          startVideoPreview()
+        }, 2000)
+      }
 
-  //     toast({
-  //       title: "Success",
-  //       description: result.message || "Facial recognition started",
-  //     })
-  //   } catch (error) {
-  //     console.error('Error starting recognition:', error)
-  //     toast({
-  //       title: "Error",
-  //       description: error instanceof Error ? error.message : "Failed to start recognition",
-  //       variant: "destructive",
-  //     })
-  //   } finally {
-  //     setIsStarting(false)
-  //   }
-  // }
+      toast({
+        title: "Success",
+        description: result.message || "Facial recognition started",
+      })
+    } catch (error) {
+      console.error('Error starting recognition:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to start recognition",
+        variant: "destructive",
+      })
+    } finally {
+      setIsStarting(false)
+    }
+  }
 
-  // const stopRecognition = async () => {
-  //   setIsStopping(true)
-  //   try {
-  //     const response = await fetch(`${API_URL}/admin/camera-settings/stop-recognition`, {
-  //       method: "POST",
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     })
+  const stopRecognition = async () => {
+    setIsStopping(true)
+    try {
+      const response = await fetch(`${API_URL}/admin/camera-settings/stop-recognition`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-  //     // Always update UI state, regardless of API response (killer switch behavior)
-  //     setIsRecognitionActive(false)
-  //     stopVideoPreview()
-  //     stopStatusMonitoring()
+      // Always update UI state, regardless of API response (killer switch behavior)
+      setIsRecognitionActive(false)
+      stopVideoPreview()
+      stopStatusMonitoring()
 
-  //     if (response.ok) {
-  //       const result = await response.json()
-  //       toast({
-  //         title: "Success",
-  //         description: result.message || "Facial recognition stopped",
-  //       })
-  //     } else {
-  //       // Even if API fails, show that we forced stop
-  //       toast({
-  //         title: "Warning",
-  //         description: "Recognition stopped (forced)",
-  //         variant: "destructive",
-  //       })
-  //     }
-  //   } catch (error) {
-  //     // Even if request fails completely, update UI state (killer switch)
-  //     setIsRecognitionActive(false)
-  //     stopVideoPreview()
-  //     stopStatusMonitoring()
+      if (response.ok) {
+        const result = await response.json()
+        toast({
+          title: "Success",
+          description: result.message || "Facial recognition stopped",
+        })
+      } else {
+        // Even if API fails, show that we forced stop
+        toast({
+          title: "Warning",
+          description: "Recognition stopped (forced)",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      // Even if request fails completely, update UI state (killer switch)
+      setIsRecognitionActive(false)
+      stopVideoPreview()
+      stopStatusMonitoring()
       
-  //     toast({
-  //       title: "Warning",
-  //       description: "Recognition stopped (forced - network error)",
-  //       variant: "destructive",
-  //     })
-  //   } finally {
-  //     setIsStopping(false)
-  //   }
-  // }
+      toast({
+        title: "Warning",
+        description: "Recognition stopped (forced - network error)",
+        variant: "destructive",
+      })
+    } finally {
+      setIsStopping(false)
+    }
+  }
 
-  // const startVideoPreview = () => {
-  //   if (!imgRef.current) return
+  const startVideoPreview = () => {
+    if (!imgRef.current) return
     
-  //   setPreviewError(null)
+    setPreviewError(null)
     
-  //   // Try streaming endpoint first
-  //   const streamUrl = `${API_URL}/admin/camera-stream`
-  //   console.log('Starting video preview with stream URL:', streamUrl)
+    // Try streaming endpoint first
+    const streamUrl = `${API_URL}/admin/camera-stream`
+    console.log('Starting video preview with stream URL:', streamUrl)
     
-  //   if (imgRef.current) {
-  //     imgRef.current.src = streamUrl
+    if (imgRef.current) {
+      imgRef.current.src = streamUrl
       
-  //     // Handle stream errors by falling back to frame polling
-  //     imgRef.current.onerror = (e) => {
-  //       console.warn("Stream failed, falling back to frame polling:", e)
-  //       setPreviewError("Live stream unavailable, using frame polling")
-  //       startFramePolling()
-  //     }
+      // Handle stream errors by falling back to frame polling
+      imgRef.current.onerror = (e) => {
+        console.warn("Stream failed, falling back to frame polling:", e)
+        setPreviewError("Live stream unavailable, using frame polling")
+        startFramePolling()
+      }
       
-  //     // Handle successful stream load
-  //     imgRef.current.onload = () => {
-  //       console.log("Stream loaded successfully")
-  //       setPreviewError(null)
-  //     }
-  //   }
-  // }
+      // Handle successful stream load
+      imgRef.current.onload = () => {
+        console.log("Stream loaded successfully")
+        setPreviewError(null)
+      }
+    }
+  }
 
-  // const startFramePolling = () => {
-  //   if (previewIntervalRef.current) {
-  //     clearInterval(previewIntervalRef.current)
-  //   }
+  const startFramePolling = () => {
+    if (previewIntervalRef.current) {
+      clearInterval(previewIntervalRef.current)
+    }
 
-  //   previewIntervalRef.current = setInterval(async () => {
-  //     try {
-  //       const response = await fetch(`${API_URL}/admin/camera-preview-frame`, {
-  //         headers: { Authorization: `Bearer ${token}` }
-  //       })
+    previewIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/camera-preview-frame`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
         
-  //       if (response.ok) {
-  //         const data = await response.json()
-  //         if (imgRef.current && data.frame) {
-  //           imgRef.current.src = data.frame
-  //           setPreviewError(null)
-  //         }
-  //       } else if (response.status === 400) {
-  //         // Recognition not running
-  //         setPreviewError("Recognition system not running")
-  //         stopVideoPreview()
-  //       } else if (response.status === 503) {
-  //         setPreviewError("Camera initializing, please wait...")
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to fetch preview frame:", error)
-  //       setPreviewError("Failed to fetch camera frame")
-  //     }
-  //   }, 200)
-  // }
+        if (response.ok) {
+          const data = await response.json()
+          if (imgRef.current && data.frame) {
+            imgRef.current.src = data.frame
+            setPreviewError(null)
+          }
+        } else if (response.status === 400) {
+          // Recognition not running
+          setPreviewError("Recognition system not running")
+          stopVideoPreview()
+        } else if (response.status === 503) {
+          setPreviewError("Camera initializing, please wait...")
+        }
+      } catch (error) {
+        console.error("Failed to fetch preview frame:", error)
+        setPreviewError("Failed to fetch camera frame")
+      }
+    }, 200)
+  }
 
-  // const stopVideoPreview = () => {
-  //   if (imgRef.current) {
-  //     imgRef.current.src = ""
-  //     imgRef.current.onerror = null
-  //     imgRef.current.onload = null
-  //   }
+  const stopVideoPreview = () => {
+    if (imgRef.current) {
+      imgRef.current.src = ""
+      imgRef.current.onerror = null
+      imgRef.current.onload = null
+    }
     
-  //   if (previewIntervalRef.current) {
-  //     clearInterval(previewIntervalRef.current)
-  //     previewIntervalRef.current = null
-  //   }
+    if (previewIntervalRef.current) {
+      clearInterval(previewIntervalRef.current)
+      previewIntervalRef.current = null
+    }
     
-  //   setPreviewError(null)
-  // }
+    setPreviewError(null)
+  }
 
-  // const startStatusMonitoring = () => {
-  //   if (statusIntervalRef.current) {
-  //     clearInterval(statusIntervalRef.current)
-  //   }
+  const startStatusMonitoring = () => {
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current)
+    }
     
-  //   // Check status every 3 seconds while recognition is supposed to be running
-  //   statusIntervalRef.current = setInterval(() => {
-  //     if (isRecognitionActive) {
-  //       fetchCameraStatus()
-  //     }
-  //   }, 3000)
-  // }
+    // Check status every 3 seconds while recognition is supposed to be running
+    statusIntervalRef.current = setInterval(() => {
+      if (isRecognitionActive) {
+        fetchCameraStatus()
+      }
+    }, 3000)
+  }
 
-  // const stopStatusMonitoring = () => {
-  //   if (statusIntervalRef.current) {
-  //     clearInterval(statusIntervalRef.current)
-  //     statusIntervalRef.current = null
-  //   }
-  // }
+  const stopStatusMonitoring = () => {
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current)
+      statusIntervalRef.current = null
+    }
+  }
 
-  // const refreshStatus = () => {
-  //   fetchCameraStatus()
-  // }
+  const refreshStatus = () => {
+    fetchCameraStatus()
+  }
 
-  // useEffect(() => {
-  //   if (token) {
-  //     fetchCameraSettings()
-  //     fetchCameraStatus()
+  useEffect(() => {
+    if (token) {
+      fetchCameraSettings()
+      fetchCameraStatus()
       
-  //     return () => {
-  //       stopVideoPreview()
-  //       stopStatusMonitoring()
-  //     }
-  //   }
-  // }, [token])
+      return () => {
+        stopVideoPreview()
+        stopStatusMonitoring()
+      }
+    }
+  }, [token])
 
-  // // Update preview when showPreview changes or recognition state changes
-  // useEffect(() => {
-  //   if (isRecognitionActive && showPreview) {
-  //     startVideoPreview()
-  //     startStatusMonitoring()
-  //   } else {
-  //     stopVideoPreview()
-  //     if (!isRecognitionActive) {
-  //       stopStatusMonitoring()
-  //     }
-  //   }
-  // }, [showPreview, isRecognitionActive])
+  // Update preview when showPreview changes or recognition state changes
+  useEffect(() => {
+    if (isRecognitionActive && showPreview) {
+      startVideoPreview()
+      startStatusMonitoring()
+    } else {
+      stopVideoPreview()
+      if (!isRecognitionActive) {
+        stopStatusMonitoring()
+      }
+    }
+  }, [showPreview, isRecognitionActive])
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-64">
-  //       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-  //     </div>
-  //   )
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
