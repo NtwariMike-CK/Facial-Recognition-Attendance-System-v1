@@ -1,0 +1,25 @@
+# local_recognition/requirements.txt
+
+# Core dependencies
+opencv-python==4.8.1.78
+face-recognition==1.3.0
+dlib==19.24.2
+numpy==1.24.3
+Pillow==10.0.1
+scipy==1.11.4
+
+# HTTP requests
+requests==2.31.0
+
+# GUI (built-in with Python, but listing for clarity)
+# tkinter - comes with Python standard library
+
+# Timezone support
+zoneinfo  # Python 3.9+ (for older versions use pytz)
+
+# Optional: Better logging and configuration
+python-dotenv==1.0.0
+
+# Face landmarks model (not a pip package - needs manual download)
+# Download from: http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+# Extract and place in the local_recognition folder
