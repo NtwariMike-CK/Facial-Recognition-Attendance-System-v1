@@ -1,111 +1,96 @@
-📘 FRAS – Facial Recognition Attendance System
-🔍 Overview
-FRAS is a web-based application designed for companies to automate employee attendance tracking using facial recognition. Admins can manage employees, monitor attendance, and handle employee queries through tickets, while employees can view their records and communicate issues. It separates attendance management into two components:
-A hosted web application for registration, settings, tracking, and analytics.
+# 📘 FRAS – Facial Recognition Attendance System
 
+---
 
-A local recognition module that detects faces in real-time using a webcam/IP camera and updates the server.
+## 🔍 Overview
 
+FRAS is a web-based attendance system that uses facial recognition to automate employee check-ins and check-outs. It is designed for companies to efficiently track attendance while offering dashboards, camera setup tools, and support ticketing systems.
 
+The platform consists of two main components:
 
-🧱 System Overview
-Component
-Description
-Web Frontend
-Next.js frontend hosted on Vercel
-Backend API
-FastAPI REST API hosted on Render/Railway
-Local Recognition
-Python script using OpenCV, dlib, face_recognition
-Database
-PostgreSQL database
+- 🌐 A **hosted web application** for registration, camera settings, attendance tracking, and analytics.
+- 💻 A **local facial recognition module** that detects and records attendance in real-time using a webcam or IP camera.
 
+---
 
+## 🧱 System Overview
 
+| Component         | Description                                  |
+|------------------|----------------------------------------------|
+| Web Frontend     | Next.js application hosted on Vercel         |
+| Backend API      | FastAPI REST API (deployed on Render/Railway)|
+| Local Recognition| Python app using OpenCV, dlib, face_recognition |
+| Database         | PostgreSQL                                    |
 
+---
 
-👤 User Roles
-Admin
+## 👤 User Roles
 
+### 🔹 Admin
 
-Registers company account
+- Registers the company account
+- Adds and manages employees
+- Uploads employee passport-style photos
+- Configures camera, working hours, and liveness settings
+- Runs the local recognition app
+- Views analytics and attendance reports
+- Handles employee tickets
 
+### 🔹 Employee
 
-Adds/manages employees and uploads passport-style images
+- Logs in using admin-provided credentials
+- Views personal attendance records
+- Submits and tracks support tickets
 
+---
 
-Sets camera/liveness/working hour settings
+## 🔄 Workflow Summary
 
+1. Admin signs up and logs into the web dashboard.
+2. Admin adds employees and configures camera/liveness settings.
+3. Admin runs the local Python recognition app.
+4. App detects faces and updates attendance via API.
+5. Admin and employees use the dashboard to track and manage attendance or tickets.
 
-Runs local facial recognition system
+---
 
+## 🧱 Tech Stack
 
-Manages attendance dashboard and support tickets
+### 🔧 Backend (FastAPI)
 
+- Authentication: JWT tokens
+- Database: PostgreSQL
 
-Employee
+### 🎨 Frontend (Next.js)
 
+- Server-side rendering
+- Admin & Employee dashboards
+- Dark/Light mode toggling
 
-Logs in using credentials provided by the admin
+### 🧠 Local Recognition
 
+- Face Detection: `face_recognition`, OpenCV, `dlib`
+- Liveness Detection: Eye blinking (blink threshold)
 
-Views personal attendance
+---
 
+## 🚀 Getting Started
 
-Submits tickets regarding issues
+### 🌐 Hosted Web App
 
+- **Frontend:** [`https://fras-ruby.vercel.app`](https://fras-ruby.vercel.app)
+- **Backend:** `https://your-backend.onrender.com`
 
+---
 
+### 👤 1. Admin Registration
 
-🔄 Workflow Summary
-Admin signs up and logs in to the web app
+**Endpoint:**  
+`[Frontend URL]/auth/admin/register`
 
+**Sample Payload:**
 
-Admin adds employees and configures camera/liveness settings
-
-
-Admin runs the local recognition app (Python) on a computer with a webcam
-
-
-Facial recognition detects and records attendance to the backend
-
-
-Admin/Employee use the web dashboard to monitor attendance or tickets
-
-
-🧱 Tech Stack
-🔧 Backend (FastAPI)
-Authentication: JWT Tokens
-
-
-Database: PostgreSQL
-
-
-
- Frontend (Next.js)
-Server-side rendering & routing
-
-
-UI: Admin and Employee dashboards
-
-
-Theme toggling (light/dark)
-
-Local Recognition(Locally using tkinter and opencv)
-Face Recognition: face_recognition, OpenCV, and dlib
-Liveness Detection: Eye blinking threshold
-
-
-
-🚀 Getting Started
- Hosted Web App
-Frontend URL: https://fras-ruby.vercel.app/ 
-
-
-Backend URL: https://your-backend.onrender.com
-
-👤 1. Admin Registration
-Endpoint:  Frontend URL/auth/admin/register
+```json
 {
   "name": "John Doe",
   "email": "admin@example.com",
@@ -113,261 +98,207 @@ Endpoint:  Frontend URL/auth/admin/register
   "password": "securepassword",
   "company": "ABC Ltd"
 }
-
 🔐 2. Admin Login
-Endpoint:  Frontend URL/auth/admin/login
+Endpoint:
+[Frontend URL]/auth/admin/login
+
+Sample Payload:
+
+json
+Copy
+Edit
 {
   "email": "admin@example.com",
   "password": "securepassword"
 }
-
-
-
 👥 3. Employee Management
-Add new employees manually
+Add employees manually
 
+Upload front-facing passport-style images
 
-Upload employee profile images (passport-style, front-facing)
+Export data as CSV
 
+Edit or delete employee records
 
-Download employee data as CSV
-
-
-Delete/update employee information
-
-
-📌 Note: Images are used for facial recognition, so clarity is important.
+📌 Note: Clear facial images are essential for reliable recognition.
 
 📸 4. Configure Camera Settings
-Add Camera Settings:
-Camera Type: webcam or ip (use webcam for now)
+Camera Type: webcam or ip
 
+Camera Source: 0 for default webcam or IP address
 
-Camera Source: Use 0 for webcam (default camera), or IP address for network camera
+Blinking Threshold: Suggest 3
 
+Arrival/Departure Time: e.g., 08:00, 17:00
 
-Blinking Threshold: Liveness detection (suggested: 3)
+Click "Save Settings" when done.
 
-
-Arrival/Departure Time: Used to set expected working hours (e.g., 08:00, 17:00)
-Save the settings.
-
-
-5. Track Attendance (Run Local Recognition App)
-⚠️ Vercel/Render cannot run facial recognition directly.
- Use the local app for that part. See below.
+🖥️ 5. Run Local Recognition App
+⚠️ Facial recognition does not run on Vercel/Render.
+Use the local app for live recognition.
 
 Start Attendance:
-Click "Start Recognition"
 
+Click “Start Recognition”
 
-Employee should face the camera for ~4 minutes
+Employee stands in front of camera for ~4 minutes
 
+Recognition Flow:
 
-How It Works:
-An initial attendance record is created with:
+Initial attendance is recorded:
 
+json
+Copy
+Edit
+{
+  "status": "absent",
+  "checkin": null,
+  "checkout": null,
+  "hours_worked": null
+}
+Face detected → checkin is set
 
-status: absent
+After 2+ minutes → checkout is set, hours are calculated
 
+📊 6. View Attendance
+Filter by date, status, or employee
 
-checkin, checkout, hours_worked: null
+Track absentees or best performers
 
+Export attendance summaries
 
-If face is detected:
+🧾 7. Ticket Management
+View tickets submitted by employees
 
+Filter: pending, in progress, solved
 
-checkin is set
+Update ticket status and respond as needed
 
+⚙️ 8. Admin Settings
+Update name, email, or password
 
-After 2 minutes, checkout is set
+Toggle between dark/light themes
 
-
-hours_worked is calculated
-
-
-
-
-6. View Attendance
-Use Dashboard:
-
-
-Filter by date, employee, status
-
-
-View check-in/out times, hours worked
-
-
-Track absentees or top performers
-
-🧾 7. Tickets (Employee Support)
-View all employee-submitted tickets
-
-
-Filter by status: pending, in progress, solved
-
-
-Update ticket status based on progress
-
-
-
-⚙️ 8. Settings
-Update admin name, email, and password
-
-
-Toggle between dark and light mode
-
-
-Manage account preferences
-
-
+Manage general preferences
 
 👨‍💼 Employee Usage
-🔐 Employee Login
-Endpoint: POST /api/auth/employee/login
+🔐 Login
+Endpoint:
+POST /api/auth/employee/login
+
 json
-CopyEdit
+Copy
+Edit
 {
   "id": 1,
   "email": "employee@example.com",
   "company": "ABC Ltd"
 }
+📌 Note: Employees are registered by the admin and cannot self-register.
 
-📝 Note: Employees do not register themselves. The admin provides their credentials.
+📊 Dashboard
+View personal check-in/check-out history
 
-📊 1. Dashboard
-View personal attendance records
+Filter by date and status
 
+View total hours worked
 
-Filter by date range and status
+🧾 Submit Tickets
+Submit new issues (e.g., missed check-in)
 
+View current ticket status
 
-See check-in, check-out, hours worked
+Communicate with admin
 
+🎥 Local Facial Recognition Setup
+📎 Detailed guide:
+GitHub – fras_local README
 
-
-🧾 2. Tickets
-Submit a new ticket (issue with attendance, system, etc.)
-
-
-View existing tickets and their status
-
-
-Get feedback/resolution updates from admin
-
-
-
-
-
-Facial Recognition Setup (Local)
-NOTE: For a detailed user guideline, check https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1/blob/main/fras_local/README.md 
 ▶️ Prerequisites
 Python 3.9+
 
-
 Webcam (or IP camera)
-
 
 Git
 
-
 Admin credentials
 
+Internet connection
 
-Internet access
-
-
-▶️ Installation Steps
-Installation Steps
-1. Clone the Repository
-https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1.git 
-Facial-Recognition-Attendance-System-v1
-2. Navigate to root Directory
+🧰 Installation Steps
+bash
+Copy
+Edit
+# 1. Clone repository
+git clone https://github.com/NtwariMike-CK/Facial-Recognition-Attendance-System-v1.git
 cd fras_local
-2. Create Virtual Environment
+
+# 2. Create and activate virtual environment
 python -m venv venv
-# Activate virtual environment
-# On Windows:
+# Windows:
 venv\Scripts\activate
-# On macOS/Linux:
+# macOS/Linux:
 source venv/bin/activate
-3. Install Dependencies
+
+# 3. Install dependencies
 pip install -r requirements.txt
-4. Download Face Landmarks Model
-Download the face landmarks model file:
-Go to: http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 
-Download and extract the file
-Place shape_predictor_68_face_landmarks.dat in the root folder 
-5. Configure API URL
-File Structure
-fras_local/
-├── main.py                               # Main application
-├── config.py                            # Configuration settings
-├── database_client.py                   # API client for backend
-├── recognition_service.py                # Face recognition logic
-├── requirements.txt                     # Python dependencies
-└── shape_predictor_68_face_landmarks.dat # Face landmarks model (download)
-└── venv/                                    # Virtual environment
-Running the Application
-1. Activate Virtual Environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-2. Start the Application
+
+# 4. Download face landmarks model
+# Visit:
+http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+# Extract and place in root folder
+
+# 5. Run the app
 python main.py
-3. Login and Use
-Login: Enter your admin email and password
-Start Recognition: Click "Start Recognition" to begin face detection
-Employee should face the camera for ~4 minutes
-Monitor: Watch the camera feed and activity log for attendance events
+📁 Project Structure (Local App)
+bash
+Copy
+Edit
+fras_local/
+├── main.py                         # Main GUI app
+├── config.py                       # Config values
+├── database_client.py              # API integration
+├── recognition_service.py          # Face detection logic
+├── shape_predictor_68...dat        # Facial landmarks model
+├── requirements.txt
+└── venv/                           # Virtual environment
+🎬 Recognition Flow Summary
+Start the app and login with admin credentials.
 
+Start camera recognition.
 
-How It Works:
-An initial attendance record is created with:
+App captures employee face and sends data to backend.
 
+Attendance is recorded:
 
-status: absent
+First detection → check-in
 
+After delay → check-out
 
-checkin, checkout, hours_worked: null
+Hours worked = checkout - checkin
 
+🧪 Admin Testing Tips
+Ensure good lighting and camera angle
 
-If face is detected:
+Use high-quality, centered passport images
 
+Test realistic work times (e.g., 08:00–17:00)
 
-checkin is set
-
-
-After 2 minutes, checkout is set
-
-
-hours_worked is calculated
-
-
-
-🧪 Testing Tips for Admins
-Use good lighting when using the camera
-
-
-Ensure passport image and live face match
-
-
-Use realistic working hours (e.g., 08:00–17:00)
-
-
-Wait at least 4 minutes to test full recognition flow
-
-
+Let the app run for at least 4 minutes to test full cycle
 
 📝 Notes
-Do not refresh or interrupt camera recognition once started
+Do not interrupt recognition while running.
 
+Data is securely transmitted to the backend.
 
-Face data is stored securely (check backend for encryption/privacy)
+Chrome or Edge are recommended browsers.
 
+Liveness detection relies on blinking — avoid static photos.
 
-The app is optimized for Chrome/Edge browsers
+👨‍💻 Author
+Ntwari Mike Chris Kevin
+Year 2 Software Engineering Student
+Passionate about AI, Automation, and Real-World Applications
 
-
-
+📄 License
+MIT License – Open for use, contribution, and extension.
