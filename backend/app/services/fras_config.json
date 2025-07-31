@@ -1,0 +1,42 @@
+{
+    "camera_source": 0,
+    "camera_type": "webcam",
+    "blink_threshold": 5,
+    "arrival_time": "09:00",
+    "departure_time": "17:00",
+    "api_base_url": "http://127.0.0.1:8000",
+    "tolerance": 0.6,
+    "face_detection_model": "hog",
+    "video_scale": 0.25,
+    "low_light_enhancement": true,
+    "recognition_settings": {
+        "face_match_threshold": 0.6,
+        "min_face_size": 50,
+        "max_face_size": 300,
+        "detection_frequency": 30,
+        "liveness_timeout": 30
+    },
+    "system_settings": {
+        "log_level": "INFO",
+        "max_log_size": "10MB",
+        "backup_count": 5,
+        "auto_cleanup": true,
+        "save_unknown_faces": false
+    },
+    "notifications": {
+        "enable_sound": true,
+        "play_success_sound": true,
+        "play_error_sound": true,
+        "sound_volume": 0.7
+    },
+    "database": {
+        "connection_timeout": 10,
+        "retry_attempts": 3,
+        "batch_size": 100
+    },
+    "security": {
+        "enable_encryption": false,
+        "api_key": "",
+        "session_timeout": 3600
+    }
+}
