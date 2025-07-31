@@ -98,31 +98,32 @@ The platform consists of two main components:
   "password": "securepassword",
   "company": "ABC Ltd"
 }
+```
 🔐 2. Admin Login
 Endpoint:
 [Frontend URL]/auth/admin/login
 
 Sample Payload:
-
-json
-Copy
-Edit
+```
 {
   "email": "admin@example.com",
   "password": "securepassword"
 }
-👥 3. Employee Management
-Add employees manually
+```
 
-Upload front-facing passport-style images
+## 3. Employee Management
 
-Export data as CSV
+. Add employees manually
 
-Edit or delete employee records
+. Upload front-facing passport-style images
+
+. Export data as CSV
+
+. Edit or delete employee records
 
 📌 Note: Clear facial images are essential for reliable recognition.
 
-📸 4. Configure Camera Settings
+## 4. Configure Camera Settings
 Camera Type: webcam or ip
 
 Camera Source: 0 for default webcam or IP address
