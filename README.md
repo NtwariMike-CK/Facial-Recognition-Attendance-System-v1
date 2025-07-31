@@ -262,7 +262,7 @@ yarn dev
 ```
 
 The frontend application will be available at `https://fras-git-main-ntwari-mike-chris-kevins-projects.vercel.app/`
-
+The backend application is on `https://facial-recognition-attendance-system-mj5y.onrender.com`
 
 ## Usage Guide
 
