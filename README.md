@@ -65,15 +65,14 @@ Facial-Recognition-Attendance-System-v1/
 │   └── .gitignore
 |   |
 ├── fras_local/                        # Next.js frontend
-│   ├── local_recognition/
-│   │   │   ├── config.py
-│   │   │   ├── .env
-│   │   │   ├── database_client.py
-│   │   │   ├── main.py
-│   │   │   ├── recognition_service.py
-│   │   │   ├── requirements.txt
-|   |   |   ├── shape_predictor_68_face_landmarks.dat
-│   │   │   ├── README.md
+│   ├── config.py
+│   ├── .env
+|   ├── database_client.py
+│   ├── main.py
+│   ├── recognition_service.py
+│   ├── requirements.txt
+|   ├── shape_predictor_68_face_landmarks.dat
+│   ├── README.md
 |   |
 └── README.md
 ```
